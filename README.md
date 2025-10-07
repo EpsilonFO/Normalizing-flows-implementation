@@ -1,156 +1,252 @@
-# Normalizing Flows Implementation
+# Normalizing Flows: Interactive Implementation
 
-This project is an interactive implementation of different Normalizing Flows models with a Streamlit user interface. It allows you to visualize and experiment with probabilistic transformations like NICE, RealNVP, and Glow on various data distributions.
+An interactive Streamlit application for exploring and experimenting with Normalizing Flows models. This educational project provides hands-on demonstrations of three major normalizing flow architectures: NICE, RealNVP, and Glow.
 
-## 📋 Table of Contents
+## 📖 About Normalizing Flows
 
-- [Introduction](#introduction)
-- [Implemented Models](#implemented-models)
-- [Installation](#installation)
-- [Usage](#usage)
-- [Project Structure](#project-structure)
-- [Features](#features)
-- [Technical Aspects](#technical-aspects)
-- [Contributions](#contributions)
-- [References](#references)
+Normalizing Flows are a class of generative models that learn to transform a simple distribution (typically Gaussian) into a complex target distribution through a sequence of invertible transformations. Unlike VAEs and GANs, normalizing flows provide:
 
-## 🔍 Introduction
+- **Exact likelihood computation**: Calculate the exact probability of data points
+- **Invertible transformations**: Both generation and inference are possible
+- **Tractable training**: Direct optimization via maximum likelihood
 
-Normalizing Flows are generative models that learn to transform a simple distribution (like a Gaussian) into a complex distribution through a sequence of invertible transformations. This project offers an interactive interface to explore these models, understand how they work, and visualize their transformations.
+The core principle relies on the change of variables theorem. Given a random variable `z` with known density `p(z)` and a bijective function `f`, the density of the transformed variable `x = f(z)` is:
 
-## 🧠 Implemented Models
+```
+p(x) = p(z) |det(∂f/∂z)⁻¹|
+```
+
+## 🎯 Implemented Models
 
 ### NICE (Non-linear Independent Components Estimation)
-- Uses additive couplings to transform distributions
-- Simplified architecture with explicit invertible transformations
-- Implementation based on the paper ["NICE: Non-linear Independent Components Estimation"](https://arxiv.org/abs/1410.8516)
+- **Year**: 2014
+- **Innovation**: Additive coupling layers with unit Jacobian determinant
+- **Transformation**: `y₂ = x₂ + m(x₁)`
+- **Advantages**: Simple, efficient, volume-preserving
+- **Limitations**: Limited expressivity due to additive-only transformations
 
 ### RealNVP (Real-valued Non-Volume Preserving)
-- Extension of NICE with affine transformations (multiplication and addition)
-- Allows more expressive mappings through scale changes
-- Based on the paper ["Density Estimation using Real NVP"](https://arxiv.org/abs/1605.08803)
+- **Year**: 2017
+- **Innovation**: Affine coupling layers with scaling and translation
+- **Transformation**: `y₂ = x₂ ⊙ exp(s(x₁)) + t(x₁)`
+- **Advantages**: More expressive, multi-scale architecture, checkerboard masking
+- **Limitations**: Fixed permutations, requires many layers for complex distributions
 
 ### Glow
-- Advanced architecture combining invertible 1x1 convolutions and affine couplings
-- Includes batch normalization and deeper networks
-- Implementation according to the paper ["Glow: Generative Flow with Invertible 1x1 Convolutions"](https://arxiv.org/abs/1807.03039)
+- **Year**: 2018
+- **Innovation**: Invertible 1×1 convolutions, ActNorm layers
+- **Architecture**: Multi-level flow with squeeze operations
+- **Advantages**: State-of-the-art image generation, semantic manipulation
+- **Limitations**: Computationally expensive, high memory requirements
 
-## 💻 Installation
+## 🚀 Getting Started
 
+### Prerequisites
+
+- Python 3.10 or higher
+- pip package manager
+- (Optional) CUDA-capable GPU for faster training
+
+### Installation
+
+1. **Clone the repository**
 ```bash
-# Clone the repository
-git clone https://github.com/EpsilonOF/Normalizing-flows-implementation.git
+git clone https://github.com/EpsilonFO/Normalizing-flows-implementation.git
 cd Normalizing-flows-implementation
+```
 
-# Create and activate a virtual environment (optional)
+2. **Create a virtual environment** (recommended)
+```bash
 python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
 
-# Install dependencies
+# On Linux/Mac:
+source venv/bin/activate
+
+# On Windows:
+venv\Scripts\activate
+```
+
+3. **Install dependencies**
+```bash
 pip install -r requirements.txt
 ```
 
-## 🚀 Usage
+### Running the Application
 
-To launch the Streamlit application:
+Launch the Streamlit web interface:
 
 ```bash
 streamlit run app.py
 ```
 
-The web interface should automatically open in your browser, allowing you to:
-- Select a model (NICE, RealNVP, Glow)
-- Choose a data distribution (Circles, Spiral, Multiple Gaussians, etc.)
-- Adjust training hyperparameters
-- Visualize transformations in real-time
+The application will automatically open in your default web browser at `http://localhost:8501`.
+
+## 💡 How to Use
+
+The application provides an intuitive interface with four main sections:
+
+### 1. Presentation
+- Overview of normalizing flows concepts
+- Mathematical foundations
+- Comparison of different architectures
+
+### 2. NICE Model
+- Interactive training on 2D distributions (Two Moons)
+- Adjustable hyperparameters:
+  - Number of coupling layers (2-12)
+  - Hidden layer dimensions (32-256)
+  - Training iterations (1000-5000)
+- Real-time visualization of learned distributions
+
+### 3. RealNVP Model
+- Training on Two Moons distribution
+- Configurable parameters:
+  - Number of coupling blocks (2-12)
+  - Training iterations (1000-5000)
+- Step-by-step visualization during training
+- Side-by-side comparison with target distribution
+
+### 4. Glow Model
+- Training on MNIST dataset (28×28 grayscale images)
+- Advanced configuration:
+  - Multi-scale levels L (1-4)
+  - Flow steps per level K (4-32)
+  - Batch size (32-256)
+  - Training iterations (1000-20000)
+- Sample generation across all digit classes
+- **Note**: Training can take several hours without GPU acceleration
 
 ## 📁 Project Structure
 
 ```
 Normalizing-flows-implementation/
-├── app.py                  # Entry point for the Streamlit application
-├── requirements.txt        # Project dependencies
-├── presentation.py         # Subject presentation
-├── nice/                   # NICE model implementation
-│   ├── nice.py             # Model layout
-│   ├── train_nice.py       # Model training
-│   └── images/             # If images need to be saved
-├── realnvp/                # RealNVP model implementation
-│   ├── real_nvp.py         # Model layout
-│   ├── train_realnvp.py    # Model training
-│   └── images/             # If images need to be saved
-├── glow/                   # Glow model implementation
-│   ├── glow.py             # Model layout
-│   ├── train_glow.py       # Model training
-│   └── images/             # If images need to be saved
+├── app.py                      # Main Streamlit application entry point
+├── presentation.py             # Presentation page with theory
+├── requirements.txt            # Python dependencies
+├── README.md                   # This file
+│
+├── nice/                       # NICE model implementation
+│   ├── nice.py                 # Streamlit interface for NICE
+│   ├── train_nice.py           # Model architecture and training logic
+│   └── images/                 # Visualization assets
+│
+├── realnvp/                    # RealNVP model implementation
+│   ├── real_nvp.py             # Streamlit interface for RealNVP
+│   ├── train_realnvp.py        # Model architecture and training logic
+│   └── images/                 # Visualization assets
+│
+├── glow/                       # Glow model implementation
+│   ├── glow.py                 # Streamlit interface for Glow
+│   ├── train_glow.py           # Model architecture and training logic
+│   └── images/                 # Visualization assets
+│
+└── docs/                       # Sphinx documentation
+    ├── conf.py                 # Sphinx configuration
+    ├── index.rst               # Documentation index
+    └── *.rst                   # Module documentation files
 ```
 
-## ✨ Features
+## 🔧 Technical Details
 
-- **Real-time visualization**: Observe how the distribution transforms during training
-- **Hyperparameter customization**: Adjust learning rate, batch size, number of epochs, etc.
-- **Comparative analysis**: Compare the performance of different models on the same data
+### Model Architectures
 
-## 🔧 Technical Aspects
+All models implement:
+- Forward transformation (data → latent space)
+- Inverse transformation (latent space → data)
+- Log-determinant Jacobian computation
+- Efficient likelihood estimation
 
-### Model Architecture
+### Training Process
 
-The models are implemented as PyTorch modules inheriting from a common base class, providing a consistent interface for:
-- Direct transformation (forward) from a simple distribution to a complex distribution
-- Inverse transformation (backward) to generate new samples
-- Calculation of the log-determinant Jacobian for density estimation
+- **Optimizer**: Adam with weight decay
+- **Loss function**: Negative log-likelihood (KL divergence minimization)
+- **Gradient handling**: NaN/Inf detection and skipping
+- **Visualization**: Real-time distribution plots during training
 
-### Training
+### Dependencies
 
-Training uses maximum likelihood estimation as the objective:
-- Minimize the KL divergence between the target distribution and the transformed distribution
-- Optimization through stochastic gradient descent with Adam
-- Tracking of training metrics such as negative log-likelihood
+Key libraries:
+- `torch` & `torchvision`: Deep learning framework
+- `normflows`: Normalizing flows utilities
+- `streamlit`: Web application framework
+- `matplotlib` & `seaborn`: Visualization
+- `numpy` & `scipy`: Numerical computing
+- `pillow`: Image processing
 
-## Documentation with Sphinx
+## 📚 Documentation
 
-This project uses Sphinx to generate comprehensive and navigable documentation. Here's how to set up, create, and compile the documentation.
-
-### Installing Sphinx
-
-To install Sphinx and the necessary extensions, run:
-
-```bash
-pip install sphinx sphinx-rtd-theme autodoc numpydoc
-```
-
-### Documentation Structure
-
-The documentation is organized in the `docs/` folder with the following structure:
-
-```
-docs/
-├── source/
-│   ├── _static/
-│   ├── _templates/
-│   ├── api/
-│   ├── tutorials/
-│   ├── conf.py
-│   ├── index.rst
-│   └── ...
-├── Makefile
-└── make.bat
-```
-
-### Generating Documentation
-
-To automatically generate the documentation:
+Generate comprehensive documentation using Sphinx:
 
 ```bash
 cd docs
 make html
 ```
 
-You will then find the HTML documentation in `docs/build/html/`.
+View the documentation by opening `docs/_build/html/index.html` in your browser.
 
-## 📚 References
+## 🛠️ Development
 
-- [NICE: Non-linear Independent Components Estimation](https://arxiv.org/abs/1410.8516)
-- [Density Estimation using Real NVP](https://arxiv.org/abs/1605.08803)
-- [Glow: Generative Flow with Invertible 1x1 Convolutions](https://arxiv.org/abs/1807.03039)
-- [Normalizing Flow implementation in PyTorch](https://github.com/VincentStimper/normalizing-flows)
+### Code Quality
+
+The project uses pre-commit hooks for code quality:
+
+```bash
+# Install pre-commit hooks
+pre-commit install
+
+# Run checks manually
+pre-commit run --all-files
+```
+
+Configuration includes:
+- **Black**: Code formatting (max line length: 100)
+- **Flake8**: Linting (ignoring E203, E261, W503)
+- **YAML validation**: Configuration file checking
+
+### Adding New Models
+
+To add a new normalizing flow model:
+
+1. Create a new directory (e.g., `newmodel/`)
+2. Implement `newmodel.py` with Streamlit interface
+3. Implement `train_newmodel.py` with model architecture
+4. Update `app.py` to include the new model
+5. Add documentation in `docs/`
+
+## 📖 References
+
+### Papers
+
+- **NICE**: [Non-linear Independent Components Estimation](https://arxiv.org/abs/1410.8516) (Dinh et al., 2014)
+- **RealNVP**: [Density Estimation using Real NVP](https://arxiv.org/abs/1605.08803) (Dinh et al., 2017)
+- **Glow**: [Generative Flow with Invertible 1×1 Convolutions](https://arxiv.org/abs/1807.03039) (Kingma & Dhariwal, 2018)
+
+### Additional Resources
+
+- [Normalizing Flows Tutorial](https://arxiv.org/abs/1912.02762)
+- [VincentStimper/normalizing-flows](https://github.com/VincentStimper/normalizing-flows) - PyTorch implementation
+- [OpenAI Glow Repository](https://github.com/openai/glow) - Official Glow implementation
+
+## 👥 Authors
+
+- [@MohammedLbkl](https://github.com/MohammedLbkl)
+- [@EpsilonFO](https://github.com/EpsilonFO)
+
+## 📝 License
+
+This project is an educational implementation for learning purposes.
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit issues or pull requests for:
+- Bug fixes
+- New model implementations
+- Documentation improvements
+- Performance optimizations
+
+## ⚠️ Notes
+
+- **GPU Recommended**: Training Glow on MNIST without GPU can take several hours
+- **Memory Usage**: Large batch sizes may require significant RAM
+- **Datasets**: MNIST will be automatically downloaded to `datasets/` on first run
+- **Browser Compatibility**: Best viewed in Chrome, Firefox, or Safari
